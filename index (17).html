@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⬡ הסידור הגלוי</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080c14;font-family:'Heebo',sans-serif;direction:rtl;color:#e2e8f0;font-size:14px;min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:0 1rem 4rem}
+.card{background:#0f1623;border:1px solid #1e2a40;border-radius:12px;padding:1rem;margin-bottom:.75rem}
+.btn{padding:.5rem 1rem;border-radius:8px;border:none;background:#1e2a40;color:#e2e8f0;font-family:'Heebo',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer}
+.btn-blue{background:#2563eb;color:#fff}
+.btn-green{background:#059669;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.btn-purple{background:#7c3aed;color:#fff}
+.btn-ghost{background:transparent;color:#64748b;border:1px solid #243048}
+.btn-full{width:100%}
+.sel{width:100%;padding:.55rem .7rem;border-radius:8px;background:#0f1623;border:1px solid #243048;color:#e2e8f0;font-family:'Heebo',sans-serif;font-size:.85rem;margin-bottom:.4rem}
+.tag{display:inline-block;padding:.15rem .5rem;border-radius:6px;font-size:.68rem;font-weight:700}
+.hidden{display:none!important}
+.page{display:none}.page.active{display:block}
+.header{display:flex;align-items:center;gap:.75rem;padding:1.25rem 0 .75rem;margin-bottom:.5rem;border-bottom:1px solid #1e2a40}
+.header h1{font-weight:900;font-size:1rem}
+.header p{font-size:.7rem;color:#64748b}
+input[type=text],input[type=password]{width:100%;padding:.55rem .7rem;border-radius:8px;background:#0f1623;border:1px solid #243048;color:#e2e8f0;font-family:'Heebo',sans-serif;font-size:.85rem;margin-bottom:.4rem}
+input:focus,select:focus{outline:none;border-color:#3b82f6}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e3a5f;border:1px solid #3b82f6;border-radius:10px;padding:.6rem 1.2rem;color:#93c5fd;font-weight:700;font-size:.85rem;z-index:9999;white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+#loading-screen{position:fixed;inset:0;background:#080c14;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1rem}
+.spinner{width:36px;height:36px;border:3px solid #1e2a40;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.show{display:flex}
+.modal-box{background:#0f1623;border:1px solid #243048;border-radius:14px;padding:1.25rem;width:100%;max-width:360px;max-height:88vh;overflow-y:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:.25rem .2rem;border-right:1px solid #1e2a40;border-bottom:1px solid #1e2a40;vertical-align:top}
+th{background:#080c14;text-align:center;font-size:.62rem;color:#64748b;position:sticky;top:0;z-index:2}
+.week-table-wrap{overflow-x:auto}
+.cell-inner{border-radius:5px;padding:2px 4px;margin-bottom:2px;cursor:pointer;min-height:28px;font-size:.66rem;font-weight:700;border:1px solid rgba(100,116,139,.2)}
+.cell-inner:hover{filter:brightness(1.3)}
+.cell-label{font-size:.48rem;font-weight:700;margin-bottom:1px;opacity:.8}
+.progress-bar{height:4px;border-radius:2px;background:#1e2a40;overflow:hidden;margin-top:.4rem}
+.progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:2px;transition:width .4s}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:800;flex-shrink:0}
+.big-btn{width:100%;padding:.9rem;border-radius:12px;color:#e2e8f0;font-family:'Heebo',sans-serif;cursor:pointer;text-align:center;border:none}
+.reason-btn{padding:.28rem .6rem;border-radius:6px;border:1px solid #243048;background:#1e2a40;color:#94a3b8;font-family:'Heebo',sans-serif;font-size:.75rem;cursor:pointer;transition:all .15s}
+.reason-btn:hover{filter:brightness(1.2)}
+.reason-btn.active{background:#2563eb;color:#fff;border-color:#3b82f6}
+.dayslot-row{background:#0a1120;border:1px solid #1e2a40;border-radius:8px;padding:.4rem .6rem;margin-bottom:.3rem;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.slot-btn{padding:.25rem .55rem;border-radius:6px;border:1.5px solid #243048;background:#0f1623;color:#64748b;font-family:'Heebo',sans-serif;font-size:.72rem;cursor:pointer}
+.slot-btn.chosen{background:rgba(167,139,250,.2);color:#c4b5fd;border-color:#a78bfa}
+.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.4);border-radius:9px;padding:.65rem .85rem;margin-bottom:.5rem;font-size:.78rem;color:#fcd34d;line-height:1.65}
+.info-green{background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.35);border-radius:10px;padding:.65rem .9rem;margin-bottom:.75rem;font-size:.82rem;color:#6ee7b7;font-weight:700}
+.info-red{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:.65rem .9rem;margin-bottom:.75rem;font-size:.82rem;color:#fca5a5;font-weight:700}
+.sync-dot{position:fixed;top:10px;left:10px;font-size:.65rem;color:#374151;z-index:200;background:#080c14;padding:.2rem .4rem;border-radius:5px}
+.alert-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.5);border-radius:10px;padding:.7rem 1rem;margin-bottom:.75rem;font-size:.82rem;color:#fcd34d;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.chag-cell{background:rgba(139,92,246,.08)!important}
+select option{background:#0f1623;color:#e2e8f0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#080c14}
+::-webkit-scrollbar-thumb{background:#243048;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div style="font-size:2rem">⬡</div>
+  <div class="spinner"></div>
+  <div style="color:#64748b;font-size:.85rem">מתחבר ל-Firebase...</div>
+</div>
+
+<div class="sync-dot" id="sync-dot">●</div>
+<div id="toast"></div>
+<div class="modal-overlay" id="modal"><div class="modal-box" id="modal-box"></div></div>
+
+<!-- HOME -->
+<div class="page" id="page-home">
+  <div class="wrap">
+    <div style="text-align:center;padding:2rem 0 1.5rem">
+      <div style="font-size:1.8rem;font-weight:900">⬡ הסידור הגלוי</div>
+      <div style="color:#94a3b8;font-weight:600;font-size:.82rem;margin-top:.2rem">שקוף • שווה • חכם</div>
+      <div style="font-size:.78rem;color:#475569;margin-top:.15rem" id="home-month"></div>
+    </div>
+    <div id="home-alert-banner" class="alert-banner hidden">⚠️ <span id="home-alert-text"></span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem">
+      <div class="card" style="text-align:center;padding:.75rem .5rem;margin-bottom:0"><div>📋</div><div style="font-size:1.3rem;font-weight:900;color:#93c5fd" id="home-stat-c">0/17</div><div style="font-size:.62rem;color:#64748b">הגישו</div></div>
+      <div class="card" style="text-align:center;padding:.75rem .5rem;margin-bottom:0"><div>🏖</div><div style="font-size:1.3rem;font-weight:900;color:#6ee7b7" id="home-stat-v">0</div><div style="font-size:.62rem;color:#64748b">חופשות</div></div>
+      <div class="card" style="text-align:center;padding:.75rem .5rem;margin-bottom:0"><div>⏳</div><div style="font-size:1.3rem;font-weight:900;color:#fcd34d" id="home-stat-p">0</div><div style="font-size:.62rem;color:#64748b">ממתינות</div></div>
+    </div>
+    <div id="home-sick-banner" class="hidden" onclick="nav('sick')" style="background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.35);border-radius:10px;padding:.65rem .9rem;margin-bottom:.75rem;font-size:.8rem;color:#fca5a5;font-weight:700;cursor:pointer"></div>
+    <div style="display:flex;flex-direction:column;gap:.65rem">
+      <div style="position:relative">
+        <button class="big-btn" style="background:linear-gradient(135deg,#05966920,#05966910);border:1px solid #05966940" onclick="nav('vac')">
+          <div style="font-size:1.5rem;margin-bottom:.25rem">🏖</div><div style="font-weight:800;font-size:.9rem">בקשת חופשה</div><div style="font-size:.68rem;opacity:.7">הגשת בקשה ומעקב</div>
+        </button>
+        <div id="home-vac-badge" class="hidden" style="position:absolute;top:8px;left:8px;background:#059669;color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:900">🔔</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+        <button class="big-btn" style="background:linear-gradient(135deg,#2563eb20,#2563eb10);border:1px solid #2563eb40" onclick="nav('emp')"><div style="font-size:1.5rem;margin-bottom:.25rem">📋</div><div style="font-weight:800;font-size:.9rem">אילוצים</div><div style="font-size:.68rem;opacity:.7">בש״ל, סטודנטים, קבע</div></button>
+        <button class="big-btn" style="background:linear-gradient(135deg,#7c3aed20,#7c3aed10);border:1px solid #7c3aed40" onclick="nav('mgr')"><div style="font-size:1.5rem;margin-bottom:.25rem">🔐</div><div style="font-weight:800;font-size:.9rem">מפקד</div><div style="font-size:.68rem;opacity:.7">אישורים וסידור</div></button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem">
+        <button class="big-btn" style="background:linear-gradient(135deg,#dc262620,#dc262610);border:1px solid #dc262640" onclick="nav('sick')"><div style="font-size:1.5rem;margin-bottom:.25rem">🤒</div><div style="font-weight:800;font-size:.9rem">דיווח מחלה</div><div style="font-size:.68rem;opacity:.7">דיווח בזמן אמת</div></button>
+        <button class="big-btn" style="background:linear-gradient(135deg,#0891b220,#0891b210);border:1px solid #0891b240" onclick="nav('past')"><div style="font-size:1.5rem;margin-bottom:.25rem">🗂</div><div style="font-weight:800;font-size:.9rem">סידורים קודמים</div><div style="font-size:.68rem;opacity:.7">ארכיון חודשים</div></button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div style="font-size:.68rem;color:#64748b;font-weight:600;margin-bottom:.4rem">הגשת אילוצים</div>
+      <div id="home-avatars" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:.4rem"></div>
+      <div class="progress-bar"><div class="progress-fill" id="home-prog" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- VACATION -->
+<div class="page" id="page-vac">
+  <div class="wrap">
+    <div class="header"><button class="btn btn-ghost" onclick="nav('home')">← חזרה</button><div><h1>🏖 בקשת חופשה</h1><p id="vac-month"></p></div></div>
+    <div class="card"><div id="vac-worker-wrap"></div></div>
+    <div id="vac-approved-banner" class="info-green hidden">🎉 בקשת חופשה שלך אושרה!</div>
+    <div id="vac-rejected-banner" class="info-red hidden">❌ בקשה אחת או יותר נדחתה</div>
+    <div id="vac-form-wrap" class="hidden">
+      <div class="card">
+        <div style="font-weight:700;font-size:.82rem;margin-bottom:.6rem" id="vac-form-title">➕ בקשה חדשה</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem">
+          <div><div style="font-size:.68rem;color:#64748b;margin-bottom:.2rem">מתאריך</div><select class="sel" id="vac-from"></select></div>
+          <div><div style="font-size:.68rem;color:#64748b;margin-bottom:.2rem">עד תאריך</div><select class="sel" id="vac-to"></select></div>
+        </div>
+        <div style="font-size:.68rem;color:#64748b;margin-bottom:.3rem">סיבה (חובה)</div>
+        <div id="vac-reasons" style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem"></div>
+        <div id="vac-form-warn" class="warn-box hidden">📋 <strong>שים/י לב</strong> — נדרש טופס נפרד</div>
+        <input type="text" id="vac-note" placeholder="הערה (אופציונלי)..." style="margin-bottom:.5rem">
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-green" style="flex:1;padding:.6rem;font-size:.88rem" id="vac-submit-btn" onclick="vacSubmit()">📤 שלח בקשה</button>
+          <button class="btn btn-ghost hidden" id="vac-cancel-btn" onclick="vacCancelEdit()" style="padding:.6rem .9rem">ביטול</button>
+        </div>
+      </div>
+      <div class="card hidden" id="vac-my-list-card"><div style="font-weight:700;font-size:.82rem;margin-bottom:.6rem">הבקשות שלי</div><div id="vac-my-list"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYEE -->
+<div class="page" id="page-emp">
+  <div class="wrap">
+    <div class="header"><button class="btn btn-ghost" onclick="nav('home')">← חזרה</button><div><h1>📋 אילוצים ומשמרות</h1><p id="emp-month"></p></div></div>
+    <div class="card"><div id="emp-worker-wrap"></div><div id="emp-worker-info" class="hidden" style="font-size:.72rem;margin-top:.3rem"></div></div>
+    <div id="emp-content" class="hidden">
+      <div style="display:flex;gap:.3rem;margin-bottom:.1rem">
+        <button id="emp-tab-cons" onclick="setEmpTab('cons')" style="flex:1;padding:.45rem;border-radius:8px 8px 0 0;border:1px solid #3b82f6;border-bottom:none;background:#0f1a2e;color:#93c5fd;font-family:Heebo,sans-serif;font-size:.8rem;font-weight:900;cursor:pointer">📋 אילוצים</button>
+        <button id="emp-tab-sched" onclick="setEmpTab('sched')" style="flex:1;padding:.45rem;border-radius:8px 8px 0 0;border:1px solid #243048;border-bottom:none;background:#080c14;color:#64748b;font-family:Heebo,sans-serif;font-size:.8rem;cursor:pointer">📅 הסידור שלי</button>
+      </div>
+      <div id="emp-panel-cons" style="border:1px solid #243048;border-radius:0 0 12px 12px;padding:.75rem;background:#0a1120"></div>
+      <div id="emp-panel-sched" style="border:1px solid #243048;border-radius:0 0 12px 12px;padding:.75rem;background:#0a1120;display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MANAGER -->
+<div class="page" id="page-mgr">
+  <div class="wrap">
+    <div class="header"><button class="btn btn-ghost" onclick="nav('home')">← חזרה</button><div><h1>🔐 לוח מפקד</h1><p id="mgr-month"></p></div></div>
+    <div id="mgr-login">
+      <div class="card" style="max-width:320px;margin:0 auto;text-align:center">
+        <div style="font-weight:700;margin-bottom:.75rem">כניסת מפקד</div>
+        <input type="password" id="mgr-pw" placeholder="סיסמה..." onkeydown="if(event.key==='Enter')mgrLogin()">
+        <div id="mgr-pw-err" class="hidden" style="color:#fca5a5;font-size:.78rem;margin-bottom:.4rem">❌ סיסמה שגויה</div>
+        <button class="btn btn-purple btn-full" style="padding:.65rem" onclick="mgrLogin()">כניסה</button>
+      </div>
+    </div>
+    <div id="mgr-panel" class="hidden">
+      <div id="mgr-sick-banner"></div>
+      <div style="display:flex;gap:.35rem;margin-bottom:.75rem;flex-wrap:wrap">
+        <button class="btn" id="mgr-tab-cons-btn" onclick="setMgrTab('cons')" style="border:1px solid #3b82f6;background:#1e3a5f;color:#93c5fd">📋 אילוצים</button>
+        <button class="btn" id="mgr-tab-vacs-btn" onclick="setMgrTab('vacs')" style="border:1px solid #243048">🏖 חופשות</button>
+        <button class="btn" id="mgr-tab-sched-btn" onclick="setMgrTab('sched')" style="border:1px solid #243048">📅 סידור</button>
+      </div>
+      <div id="mgr-panel-cons"></div>
+      <div id="mgr-panel-vacs" class="hidden"></div>
+      <div id="mgr-panel-sched" class="hidden"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SICK -->
+<div class="page" id="page-sick">
+  <div class="wrap">
+    <div class="header"><button class="btn btn-ghost" onclick="nav('home')">← חזרה</button><div><h1>🤒 דיווח מחלה</h1></div></div>
+    <div class="card"><div id="sick-worker-wrap"></div></div>
+    <div id="sick-shifts-card" class="card hidden"><div style="font-weight:700;font-size:.82rem;margin-bottom:.5rem">בחר/י משמרת:</div><div id="sick-shifts-list"></div><button class="btn btn-red btn-full hidden" id="sick-confirm-btn" style="padding:.6rem;margin-top:.4rem" onclick="sickSubmit()">🤒 אשר דיווח מחלה</button></div>
+    <div id="sick-no-shifts" class="card hidden" style="color:#64748b;text-align:center;font-size:.82rem">לא נמצאו משמרות קרובות</div>
+    <div id="sick-no-sched" class="card hidden" style="color:#64748b;text-align:center;font-size:.82rem">הסידור טרם נוצר</div>
+    <div class="card"><div style="font-weight:700;font-size:.82rem;margin-bottom:.5rem">דיווחים פעילים</div><div id="sick-active-list"><div style="font-size:.78rem;color:#64748b">אין דיווחים פעילים</div></div></div>
+  </div>
+</div>
+
+<!-- PAST SCHEDULES -->
+<div class="page" id="page-past">
+  <div class="wrap">
+    <div class="header"><button class="btn btn-ghost" onclick="nav('home')">← חזרה</button><div><h1>🗂 סידורים קודמים</h1></div></div>
+    <div id="past-content"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBxSXjeGVT3hq16tH8zHfxjLEFIBzOjQKo",
+  authDomain: "sidur-galui.firebaseapp.com",
+  databaseURL: "https://sidur-galui-default-rtdb.firebaseio.com",
+  projectId: "sidur-galui",
+  storageBucket: "sidur-galui.firebasestorage.app",
+  messagingSenderId: "116813856827",
+  appId: "1:116813856827:web:22bcd0159bc7c000ffdc1e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window._fbSet = (path, data) => set(ref(db, path), data);
+window._fbListen = (path, cb) => onValue(ref(db, path), snap => cb(snap.val()));
+
+let loaded = {c:false, v:false, s:false, sk:false, p:false};
+let _appStarted = false;
+function checkLoaded() {
+  if(_appStarted) return;
+  if(loaded.c && loaded.v && loaded.s && loaded.sk && loaded.p) {
+    _appStarted = true;
+    document.getElementById('loading-screen').style.display = 'none';
+    window._appInit();
+  }
+}
+window._fbListen('constraints',    v => { window._allC=v||{}; loaded.c=true; checkLoaded(); if(window._appReady&&window._currentPage==='home')renderHome(); });
+window._fbListen('vacations',      v => { window._allV=Array.isArray(v)?v:Object.values(v||{}); loaded.v=true; checkLoaded(); if(window._appReady&&window._currentPage==='home')renderHome(); });
+window._fbListen('schedule',       v => { const s=v||{}; window._schedule=s.schedule||{}; window._schedReady=s.schedReady||false; loaded.s=true; checkLoaded(); });
+window._fbListen('sick',           v => { window._allSick=Array.isArray(v)?v:Object.values(v||{}); loaded.sk=true; checkLoaded(); if(window._appReady&&window._currentPage==='home')renderHome(); });
+window._fbListen('past_schedules', v => { window._pastSchedules=v||{}; loaded.p=true; checkLoaded(); });
+</script>
+
+<script>
+// ══════ CONSTANTS ══════
+const WORKERS_BASHAL=['יוסף','ליאן','נועה','שירה נ','שירה ח','חנה','תהילה','נורית','לאה','עמית'];
+const WORKERS_STUDENT=['עידו','נויה','לינור'];
+const WORKERS_KEVA=['שמואל','תמר','נועם','אוראל'];
+const ALL_WORKERS=[...WORKERS_BASHAL,...WORKERS_STUDENT,...WORKERS_KEVA];
+const DESK_MAP={'יוסף':'סד"צ','נורית':'סד"צ','תהילה':'סד"צ','לינור':'סד"צ','נועה':'פלילי','ליאן':'פלילי','שירה נ':'פלילי','חנה':'פלילי','נויה':'פלילי','שירה ח':'פח"ע','לאה':'פח"ע','עמית':'פח"ע','עידו':'פח"ע','שמואל':'מפקד','תמר':'מפקד','נועם':'מפקד','אוראל':'מפקד'};
+const POP_MAP={...Object.fromEntries(WORKERS_BASHAL.map(n=>[n,'bashal'])),...Object.fromEntries(WORKERS_STUDENT.map(n=>[n,'student'])),...Object.fromEntries(WORKERS_KEVA.map(n=>[n,'keva']))};
+const POP_LABEL={bashal:'⭐ בש"ל',student:'🎓 סטודנט',keva:'👮 קבע'};
+const POP_COLOR={bashal:'#3b82f6',student:'#8b5cf6',keva:'#f59e0b'};
+const NO_SAT_NIGHT=['תהילה','נורית','שירה נ','שירה ח','לאה'];
+// night shift: 1 person if יוסף/נועה/ליאן/עמית; 2 if תהילה/נורית/שירה נ/שירה ח/לאה
+const NIGHT_1=['יוסף','נועה','ליאן','עמית'];
+const NIGHT_2=['תהילה','נורית','שירה נ','שירה ח','לאה'];
+const ACHMASH=['נועה','ליאן','יוסף','עמית'];
+// ראשון: בנות שירות אלה — בוקר בלבד (לא ערב/לילה)
+const SUN_MORNING_10=['נורית','שירה ח']; // משעה 10:00
+const SUN_MORNING_9=['תהילה']; // משעה 09:00
+const SUN_MORNING_ONLY=[...SUN_MORNING_10,...SUN_MORNING_9];
+// חמישי ערב — משתחררות ב-20:00
+const THU_EARLY_RELEASE=['נורית','שירה ח','עמית','תהילה'];
+const MGR_PW='7100';
+const MAX_C=8;
+const SHIFT_HOURS={a:8,b:6.5,c:9.5};
+const SHIFTS_K=[{key:'a',label:'א׳',time:'07:00–15:00'},{key:'b',label:'ב׳',time:'15:00–21:30'},{key:'c',label:'ג׳',time:'21:30–07:00'}];
+const HEB_DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const HEB_MONTHS=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const HEB_MONTHS_HE=['ניסן','אייר','סיוון','תמוז','אב','אלול','תשרי','חשוון','כסלו','טבת','שבט','אדר'];
+const DESKS=['sadatz','plili','paha'];
+// Desk colors for schedule display
+const DESK_COLOR={sadatz:'rgba(139,92,246,',plili:'rgba(37,99,235,',paha:'rgba(220,38,38,'};
+const DESK_BORDER={sadatz:'#7c3aed',plili:'#2563eb',paha:'#dc2626'};
+const DESK_LABEL_COLOR={sadatz:'#c4b5fd',plili:'#93c5fd',paha:'#fca5a5'};
+const DESK_DISPLAY={sadatz:'סד"צ',plili:'פלילי',paha:'פח"ע'};
+const VACATION_REASONS=['חופש','טיסה','אירוע משפחתי','חתונה','אבל','מחלה','לימודים','אחר'];
+const REASONS_NEED_FORM=['חופש','טיסה'];
+const ROSTER=ALL_WORKERS.map(n=>{const pop=POP_MAP[n];const dh=DESK_MAP[n]||'';const desk=dh==='סד"צ'?'sadatz':dh==='פלילי'?'plili':dh==='פח"ע'?'paha':'keva';return{name:n,pop,desk};});
+
+// ══════ JEWISH HOLIDAYS 2025-2026 ══════
+// Format: 'day-month' (Gregorian)
+const JEWISH_HOLIDAYS={
+  // 2025
+  '13-4':{name:'ערב פסח',type:'erev'},
+  '14-4':{name:'פסח א׳',type:'chag'},
+  '15-4':{name:'פסח ב׳',type:'chag'},
+  '16-4':{name:'חול המועד',type:'chol_moed'},
+  '17-4':{name:'חול המועד',type:'chol_moed'},
+  '18-4':{name:'חול המועד',type:'chol_moed'},
+  '19-4':{name:'חול המועד',type:'chol_moed'},
+  '20-4':{name:'פסח ז׳',type:'chag'},
+  '21-4':{name:'פסח ח׳',type:'chag'},
+  '1-5':{name:'יום העצמאות',type:'chag'},
+  '2-6':{name:'ערב שבועות',type:'erev'},
+  '3-6':{name:'שבועות',type:'chag'},
+  '4-6':{name:'שבועות ב׳',type:'chag'},
+  '4-8':{name:'תשעה באב',type:'tzom'},
+  // 2025 High Holidays
+  '22-9':{name:'ערב ר"ה',type:'erev'},
+  '23-9':{name:'ראש השנה',type:'chag'},
+  '24-9':{name:'ראש השנה ב׳',type:'chag'},
+  '1-10':{name:'ערב יוה"כ',type:'erev'},
+  '2-10':{name:'יום כיפור',type:'tzom'},
+  '6-10':{name:'ערב סוכות',type:'erev'},
+  '7-10':{name:'סוכות',type:'chag'},
+  '8-10':{name:'סוכות ב׳',type:'chag'},
+  '9-10':{name:'חול המועד',type:'chol_moed'},
+  '10-10':{name:'חול המועד',type:'chol_moed'},
+  '11-10':{name:'חול המועד',type:'chol_moed'},
+  '12-10':{name:'חול המועד',type:'chol_moed'},
+  '13-10':{name:'הושענא רבה',type:'chol_moed'},
+  '14-10':{name:'שמיני עצרת',type:'chag'},
+  '15-10':{name:'שמחת תורה',type:'chag'},
+  // Chanuka 2025
+  '14-12':{name:'חנוכה א׳',type:'chanuka'},
+  '15-12':{name:'חנוכה ב׳',type:'chanuka'},
+  '16-12':{name:'חנוכה ג׳',type:'chanuka'},
+  '17-12':{name:'חנוכה ד׳',type:'chanuka'},
+  '18-12':{name:'חנוכה ה׳',type:'chanuka'},
+  '19-12':{name:'חנוכה ו׳',type:'chanuka'},
+  '20-12':{name:'חנוכה ז׳',type:'chanuka'},
+  '21-12':{name:'חנוכה ח׳',type:'chanuka'},
+  // 2026
+  '12-1':{name:'עשרה בטבת',type:'tzom'},
+  '2-2':{name:'ט"ו בשבט',type:'minor'},
+  '2-3':{name:'תענית אסתר',type:'tzom'},
+  '5-3':{name:'ערב פורים',type:'erev'},
+  '6-3':{name:'פורים',type:'chag'},
+  '7-3':{name:'שושן פורים',type:'minor'},
+  '31-3':{name:'ערב פסח',type:'erev'},
+  '1-4':{name:'פסח א׳',type:'chag'},
+  '2-4':{name:'פסח ב׳',type:'chag'},
+  '3-4':{name:'חול המועד',type:'chol_moed'},
+  '4-4':{name:'חול המועד',type:'chol_moed'},
+  '5-4':{name:'חול המועד',type:'chol_moed'},
+  '6-4':{name:'חול המועד',type:'chol_moed'},
+  '7-4':{name:'פסח ז׳',type:'chag'},
+  '8-4':{name:'פסח ח׳',type:'chag'},
+  '21-4':{name:'יום העצמאות',type:'chag'},
+  '21-5':{name:'ערב שבועות',type:'erev'},
+  '22-5':{name:'שבועות',type:'chag'},
+  '23-5':{name:'שבועות ב׳',type:'chag'},
+};
+const HOLIDAY_COLORS={chag:'rgba(139,92,246,.15)',tzom:'rgba(100,116,139,.12)',erev:'rgba(245,158,11,.08)',chol_moed:'rgba(139,92,246,.07)',chanuka:'rgba(250,204,21,.08)',minor:'rgba(16,185,129,.08)'};
+const HOLIDAY_TEXT={chag:'#c4b5fd',tzom:'#94a3b8',erev:'#fcd34d',chol_moed:'#a78bfa',chanuka:'#fde68a',minor:'#6ee7b7'};
+
+function getHoliday(day,month){return JEWISH_HOLIDAYS[`${day}-${month}`]||null;}
+
+function buildScheduleDays(){
+  const today=new Date();let y=today.getFullYear(),m=today.getMonth()+2;
+  if(m>12){m=1;y++;}
+  const days=[];const dim=new Date(y,m,0).getDate();
+  for(let i=1;i<=dim;i++){const jd=new Date(y,m-1,i).getDay();days.push({day:i,month:m,year:y,label:`${i}/${m}`,jsDay:jd,isWeekend:jd===5||jd===6,isFri:jd===5,isSat:jd===6,holiday:getHoliday(i,m)});}
+  const last=days[days.length-1];
+  if(last.jsDay!==6){let d=last.day+1,mo=m,yr=y;while(true){if(d>new Date(yr,mo,0).getDate()){d=1;mo++;if(mo>12){mo=1;yr++;}}const jd=new Date(yr,mo-1,d).getDay();days.push({day:d,month:mo,year:yr,label:`${d}/${mo}`,jsDay:jd,isWeekend:jd===5||jd===6,isFri:jd===5,isSat:jd===6,holiday:getHoliday(d,mo)});if(jd===6)break;d++;}}
+  return days;
+}
+const SCHEDULE_DAYS=buildScheduleDays();
+const MONTH_LABEL=`${HEB_MONTHS[(SCHEDULE_DAYS[0]?.month||1)-1]} ${SCHEDULE_DAYS[0]?.year||new Date().getFullYear()}`;
+
+function get_allC(){return window._allC||{};}
+function get_allV(){return window._allV||[];}
+function get_schedule(){return window._schedule||{};}
+function get_schedReady(){return window._schedReady||false;}
+function get_allSick(){return window._allSick||[];}
+function get_pastSchedules(){return window._pastSchedules||{};}
+
+function saveC(d){
+  window._allC=d;
+  // render immediately without waiting for Firebase
+  if(window._currentPage==='emp'&&window._empWorker)renderConsPanel();
+  else if(window._currentPage==='home')renderHome();
+  setSyncing(true);
+  window._fbSet('constraints',d).then(()=>setSyncing(false));
+}
+function saveV(d){window._allV=d;setSyncing(true);window._fbSet('vacations',d).then(()=>setSyncing(false));}
+function saveS(s,r){
+  window._schedule=s;window._schedReady=r;setSyncing(true);
+  // Archive current month when saving
+  const key=`${SCHEDULE_DAYS[0]?.year}_${SCHEDULE_DAYS[0]?.month}`;
+  const past=get_pastSchedules();past[key]={schedule:s,schedReady:r,month:SCHEDULE_DAYS[0]?.month,year:SCHEDULE_DAYS[0]?.year,label:MONTH_LABEL};
+  window._fbSet('past_schedules',past).catch(()=>{});
+  window._fbSet('schedule',{schedule:s,schedReady:r}).then(()=>setSyncing(false));
+}
+function saveSick(d){window._allSick=d;setSyncing(true);window._fbSet('sick',d).then(()=>setSyncing(false));}
+
+function g(id){return document.getElementById(id);}
+function show(id){const el=g(id);if(el)el.classList.remove('hidden');}
+function hide(id){const el=g(id);if(el)el.classList.add('hidden');}
+function mkTag(text,bg,color,border){return`<span class="tag" style="background:${bg};color:${color};border:1px solid ${border}">${text}</span>`;}
+function dayOptsHTML(){return SCHEDULE_DAYS.map(d=>{const h=d.holiday;return`<option value="${d.day}-${d.month}">${d.label} ${HEB_DAYS[d.jsDay]}${h?' — '+h.name:''}</option>`;}).join('');}
+function workerSelHTML(id,onchange,showDesk){
+  const grps=[
+    {l:'⭐ בשל',list:WORKERS_BASHAL,short:'⭐ בשל'},
+    {l:'🎓 סטודנטים',list:WORKERS_STUDENT,short:'🎓 סטודנט'},
+    {l:'👮 קבע',list:WORKERS_KEVA,short:'👮 קבע'}
+  ];
+  return`<select class="sel" id="${id}" onchange="${onchange}"><option value="">— בחר/י שם —</option>${grps.map(gr=>`<optgroup label="${gr.l}">${gr.list.map(n=>`<option value="${n}">${n}${showDesk?' — '+gr.short:''}</option>`).join('')}</optgroup>`).join('')}</select>`;
+}
+function getWeeks(days){days=days||SCHEDULE_DAYS;const weeks=[];let week=[];days.forEach(d=>{if(d.jsDay===0&&week.length){weeks.push(week);week=[];}week.push(d);});if(week.length)weeks.push(week);return weeks;}
+let toastT;
+function toast(msg){const el=g('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2800);}
+function setSyncing(v){const el=g('sync-dot');if(v){el.textContent='⟳';el.style.color='#fcd34d';}else{el.textContent='✓';el.style.color='#6ee7b7';setTimeout(()=>{el.textContent='●';el.style.color='#374151';},1500);}}
+
+// ══════ NAV ══════
+function nav(page){
+  window._currentPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  g('page-'+page).classList.add('active');window.scrollTo(0,0);
+  if(page==='home')renderHome();
+  else if(page==='vac')initVac();
+  else if(page==='emp')initEmp();
+  else if(page==='mgr')initMgr();
+  else if(page==='sick')initSick();
+  else if(page==='past')initPast();
+}
+
+window._appInit = function(){window._appReady=true;window._currentPage='home';nav('home');};
+
+// ══════ HOME ══════
+window._renderHome = function(){
+  if(!g('page-home').classList.contains('active'))return;
+  const allC=get_allC(),allV=get_allV(),allSick=get_allSick();
+  const sub=Object.values(allC).filter(v=>v.submitted).length,total=ALL_WORKERS.length;
+  const pend=allV.filter(v=>v.status==='pending').length;
+  const decided=allV.filter(v=>v.status==='approved'||v.status==='rejected').length;
+  const activeSick=allSick.filter(r=>!r.resolved).length;
+  g('home-month').textContent=MONTH_LABEL+' | חמ"ל';
+  g('home-stat-c').textContent=`${sub}/${total}`;
+  g('home-stat-v').textContent=allV.length;
+  g('home-stat-p').textContent=pend;
+  g('home-prog').style.width=(total?sub/total*100:0)+'%';
+  g('home-avatars').innerHTML=ALL_WORKERS.map(n=>{const s=allC[n]?.submitted;const col=POP_COLOR[POP_MAP[n]];return`<div class="avatar" title="${n}" style="background:${s?col:'#1e2a40'};border:2px solid ${s?col:'#243048'};color:${s?'white':'#64748b'}">${n[0]}</div>`;}).join('');
+  if(activeSick>0){show('home-sick-banner');g('home-sick-banner').textContent=`🚨 ${activeSick} דיווח מחלה פעיל — לחץ לפרטים`;}else hide('home-sick-banner');
+  decided>0?show('home-vac-badge'):hide('home-vac-badge');
+  // Alert: days 15-22 of month
+  const today=new Date(),d=today.getDate();
+  if(d>=15&&d<=22){show('home-alert-banner');g('home-alert-text').textContent=`יש להזין אילוצים עד ה-22 לחודש! (נותרו ${22-d} ימים)`;}
+  else hide('home-alert-banner');
+}
+function renderHome(){window._renderHome();}
+
+// ══════ VACATION ══════
+let vacWorker='',vacReason='',vacEditId=null;
+function initVac(){
+  g('vac-month').textContent=MONTH_LABEL;
+  g('vac-worker-wrap').innerHTML=workerSelHTML('vac-worker','vacWorkerChange()',true);
+  g('vac-from').innerHTML='<option value="">בחר...</option>'+dayOptsHTML();
+  g('vac-to').innerHTML='<option value="">בחר...</option>'+dayOptsHTML();
+  // Build reason buttons - each with proper onclick
+  g('vac-reasons').innerHTML=VACATION_REASONS.map(r=>{
+    const safeId='vrb_'+r.replace(/[^א-תa-zA-Z0-9]/g,'_');
+    return`<button type="button" class="reason-btn" id="${safeId}" onclick="vacPickReason(this,'${r.replace(/'/g,"\\'")}')">${r}</button>`;
+  }).join('');
+  vacWorker='';vacReason='';vacEditId=null;
+  hide('vac-form-wrap');hide('vac-approved-banner');hide('vac-rejected-banner');hide('vac-form-warn');hide('vac-cancel-btn');hide('vac-my-list-card');g('vac-note').value='';
+}
+function vacWorkerChange(){
+  vacWorker=g('vac-worker').value;vacEditId=null;vacReason='';g('vac-note').value='';
+  document.querySelectorAll('#vac-reasons .reason-btn').forEach(b=>b.classList.remove('active'));
+  hide('vac-form-warn');
+  if(!vacWorker){hide('vac-form-wrap');return;}
+  show('vac-form-wrap');g('vac-form-title').textContent='➕ בקשה חדשה';g('vac-submit-btn').textContent='📤 שלח בקשה';hide('vac-cancel-btn');
+  const allV=get_allV();
+  allV.some(v=>v.worker===vacWorker&&v.status==='approved')?show('vac-approved-banner'):hide('vac-approved-banner');
+  allV.some(v=>v.worker===vacWorker&&v.status==='rejected')?show('vac-rejected-banner'):hide('vac-rejected-banner');
+  renderMyVacs();
+}
+function vacPickReason(btn,r){
+  vacReason=r;
+  document.querySelectorAll('#vac-reasons .reason-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  REASONS_NEED_FORM.includes(r)?show('vac-form-warn'):hide('vac-form-warn');
+}
+function vacSubmit(){
+  if(!vacWorker||!g('vac-from').value||!g('vac-to').value||!vacReason){toast('⚠️ יש לבחור שם, תאריכים וסיבה');return;}
+  const from=g('vac-from').value,to=g('vac-to').value;
+  const fi=SCHEDULE_DAYS.findIndex(d=>`${d.day}-${d.month}`===from),ti=SCHEDULE_DAYS.findIndex(d=>`${d.day}-${d.month}`===to);
+  if(fi<0||ti<0||ti<fi){toast('⚠️ תאריכים לא תקינים');return;}
+  const days=SCHEDULE_DAYS.slice(fi,ti+1).map(d=>({day:d.day,month:d.month}));
+  const entry={id:vacEditId||Date.now(),worker:vacWorker,pop:POP_MAP[vacWorker]||'bashal',from:SCHEDULE_DAYS[fi],to:SCHEDULE_DAYS[ti],days,reason:vacReason,note:g('vac-note').value,status:'pending',submittedAt:new Date().toLocaleDateString('he-IL'),needsForm:REASONS_NEED_FORM.includes(vacReason)};
+  const allV=get_allV();
+  saveV(vacEditId?allV.map(v=>v.id===vacEditId?entry:v):[...allV,entry]);
+  toast(vacEditId?'✅ בקשה עודכנה':'✅ בקשה נשלחה');
+  vacEditId=null;vacReason='';g('vac-note').value='';g('vac-from').value='';g('vac-to').value='';
+  document.querySelectorAll('#vac-reasons .reason-btn').forEach(b=>b.classList.remove('active'));
+  hide('vac-form-warn');hide('vac-cancel-btn');g('vac-form-title').textContent='➕ בקשה חדשה';g('vac-submit-btn').textContent='📤 שלח בקשה';renderMyVacs();
+}
+function vacCancelEdit(){vacEditId=null;vacReason='';g('vac-note').value='';g('vac-from').value='';g('vac-to').value='';document.querySelectorAll('#vac-reasons .reason-btn').forEach(b=>b.classList.remove('active'));hide('vac-form-warn');hide('vac-cancel-btn');g('vac-form-title').textContent='➕ בקשה חדשה';g('vac-submit-btn').textContent='📤 שלח בקשה';}
+function vacEdit(id){
+  const allV=get_allV();const v=allV.find(x=>x.id===id);if(!v)return;
+  vacEditId=id;vacReason=v.reason;g('vac-from').value=`${v.from.day}-${v.from.month}`;g('vac-to').value=`${v.to.day}-${v.to.month}`;g('vac-note').value=v.note||'';
+  document.querySelectorAll('#vac-reasons .reason-btn').forEach(b=>{b.classList.remove('active');if(b.textContent===v.reason)b.classList.add('active');});
+  REASONS_NEED_FORM.includes(v.reason)?show('vac-form-warn'):hide('vac-form-warn');
+  g('vac-form-title').textContent='✏️ עריכת בקשה';g('vac-submit-btn').textContent='💾 עדכן';show('vac-cancel-btn');
+}
+function vacDelete(id){const allV=get_allV();saveV(allV.filter(v=>v.id!==id));toast('🗑 נמחקה');if(vacEditId===id)vacCancelEdit();renderMyVacs();}
+function renderMyVacs(){
+  const allV=get_allV();const myVacs=allV.filter(v=>v.worker===vacWorker);
+  if(!myVacs.length){hide('vac-my-list-card');return;}
+  show('vac-my-list-card');
+  const SC={pending:'#fcd34d',approved:'#6ee7b7',rejected:'#fca5a5'},SL={pending:'⏳ ממתין',approved:'✅ אושר',rejected:'❌ נדחה'};
+  g('vac-my-list').innerHTML=myVacs.map(v=>`<div style="border-bottom:1px solid #1e2a40;padding:.55rem 0"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem"><div style="flex:1"><div style="font-size:.85rem;font-weight:700">${v.from?.label} – ${v.to?.label}</div><div style="font-size:.7rem;color:#64748b">${v.reason}${v.needsForm?' 📋':''}</div>${v.note?`<div style="font-size:.68rem;color:#475569">${v.note}</div>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:.25rem">${mkTag(SL[v.status],'transparent',SC[v.status],SC[v.status])}${v.status==='pending'?`<div style="display:flex;gap:.25rem"><button onclick="vacEdit(${v.id})" style="background:rgba(37,99,235,.12);color:#93c5fd;border:1px solid rgba(37,99,235,.25);padding:.15rem .4rem;border-radius:5px;font-size:.65rem;cursor:pointer;font-family:Heebo,sans-serif">✏️</button><button onclick="vacDelete(${v.id})" style="background:rgba(220,38,38,.1);color:#fca5a5;border:1px solid rgba(220,38,38,.25);padding:.15rem .4rem;border-radius:5px;font-size:.65rem;cursor:pointer;font-family:Heebo,sans-serif">🗑</button></div>`:''}</div></div></div>`).join('');
+}
+
+// ══════ EMPLOYEE ══════
+window._empWorker='';
+function initEmp(){g('emp-month').textContent=MONTH_LABEL;g('emp-worker-wrap').innerHTML=workerSelHTML('emp-worker','empWorkerChange()',true);/* do NOT reset _empWorker here - keep selection */hide('emp-content');hide('emp-worker-info');if(window._empWorker){g('emp-worker').value=window._empWorker;empWorkerChange();}}
+function empWorkerChange(){
+  window._empWorker=g('emp-worker').value;
+  if(!window._empWorker){hide('emp-content');hide('emp-worker-info');return;}
+  const pop=POP_MAP[window._empWorker]||'bashal';
+  g('emp-worker-info').innerHTML=`<span style="color:${POP_COLOR[pop]}">${POP_LABEL[pop]}</span> | ${DESK_MAP[window._empWorker]||''}`;
+  show('emp-worker-info');show('emp-content');setEmpTab('cons');
+}
+function setEmpTab(t){
+  ['cons','sched'].forEach(x=>{
+    const btn=g('emp-tab-'+x);const panel=g('emp-panel-'+x);
+    if(x===t){btn.style.borderColor='#3b82f6';btn.style.background='#0f1a2e';btn.style.color='#93c5fd';btn.style.fontWeight='900';panel.style.display='block';}
+    else{btn.style.borderColor='#243048';btn.style.background='#080c14';btn.style.color='#64748b';btn.style.fontWeight='400';panel.style.display='none';}
+  });
+  t==='cons'?renderConsPanel():renderMySchedPanel();
+}
+function renderConsPanel(){
+  const allC=get_allC();const pop=POP_MAP[window._empWorker]||'bashal';
+  const wData=allC[window._empWorker]||{constraints:[],submitted:false};const cons=wData.constraints||[];
+  const wdDays=SCHEDULE_DAYS.filter(d=>!d.isWeekend),friDays=SCHEDULE_DAYS.filter(d=>d.isFri),satDays=SCHEDULE_DAYS.filter(d=>d.isSat);
+  const shL={a:'א׳',b:'ב׳',c:'ג׳'};const totalH=cons.reduce((s,c)=>(SHIFT_HOURS[c.shiftKey]||8)+s,0);
+  const slotRows=(days,shifts)=>days.map(d=>{
+    const h=d.holiday;
+    return`<div class="dayslot-row" style="${h?`background:${HOLIDAY_COLORS[h.type]||'rgba(139,92,246,.07)'}`:''}">`+
+    `<span style="font-size:.75rem;font-weight:700;color:${h?HOLIDAY_TEXT[h.type]||'#c4b5fd':'#fcd34d'};min-width:3rem">${d.label}</span>`+
+    (h?`<span style="font-size:.55rem;color:${HOLIDAY_TEXT[h.type]||'#c4b5fd'}">${h.name}</span>`:'')+
+    shifts.map(sh=>{const ch=cons.some(c=>c.day===d.day&&c.month===d.month&&c.shiftKey===sh&&c.type==='prefer');return`<button class="slot-btn${ch?' chosen':''}" onclick="toggleSlot(${d.day},${d.month},'${sh}')">${ch?'✓ ':''}${shL[sh]}</button>`;}).join('')+
+    `</div>`;
+  }).join('');
+  let html='';
+  if(pop==='student'){
+    html+=`<div style="font-weight:700;color:#a78bfa;font-size:.8rem;margin-bottom:.5rem">📌 סוף שבוע (חובה)</div>`;
+    html+=`<div style="margin-bottom:.6rem"><div style="font-size:.68rem;color:#fcd34d;margin-bottom:.3rem">שישי — לפחות 2</div>${slotRows(friDays,['a','b','c'])}</div>`;
+    html+=`<div style="margin-bottom:.75rem"><div style="font-size:.68rem;color:#fcd34d;margin-bottom:.3rem">שבת — לפחות 2 (ללא ג׳)</div>${slotRows(satDays,['a','b'])}</div>`;
+    html+=`<div style="font-weight:700;color:#a78bfa;font-size:.8rem;margin-bottom:.4rem">➕ ימי חול (אופציונלי)</div>`;
+    html+=`<div style="display:flex;gap:.4rem;margin-bottom:.5rem;flex-wrap:wrap"><select class="sel" id="cons-day" style="flex:1;margin-bottom:0">${wdDays.map(d=>`<option value="${d.day}-${d.month}">${d.label} ${HEB_DAYS[d.jsDay]}${d.holiday?' — '+d.holiday.name:''}</option>`).join('')}</select><select class="sel" id="cons-sh" style="width:90px;margin-bottom:0"><option value="a">א׳</option><option value="b">ב׳</option><option value="c">ג׳</option></select><button class="btn" style="background:#8b5cf6;color:white;padding:.4rem .7rem" onclick="addCons()">➕</button></div>`;
+  } else if(pop==='keva'){
+    html+=`<div style="font-weight:700;color:#fcd34d;font-size:.8rem;margin-bottom:.5rem">⭐ סוף שבוע (חובה)</div>`;
+    html+=`<div style="margin-bottom:.5rem"><div style="font-size:.68rem;color:#fcd34d;margin-bottom:.3rem">שישי — בחר/י 1</div>${slotRows(friDays,['a','b','c'])}</div>`;
+    html+=`<div style="margin-bottom:.75rem"><div style="font-size:.68rem;color:#fcd34d;margin-bottom:.3rem">שבת — בחר/י 1 (ללא ג׳)</div>${slotRows(satDays,['a','b'])}</div>`;
+    html+=`<div style="font-weight:700;color:#fcd34d;font-size:.8rem;margin-bottom:.4rem">⛔ חסימות ימי חול</div>`;
+    html+=`<div style="display:flex;gap:.4rem;margin-bottom:.5rem;flex-wrap:wrap"><select class="sel" id="cons-day" style="flex:1;margin-bottom:0">${wdDays.map(d=>`<option value="${d.day}-${d.month}">${d.label} ${HEB_DAYS[d.jsDay]}</option>`).join('')}</select><select class="sel" id="cons-sh" style="width:90px;margin-bottom:0"><option value="a">א׳</option><option value="b">ב׳</option></select><button class="btn" style="background:#f59e0b;color:#080c14;padding:.4rem .7rem" onclick="addCons()">⛔</button></div>`;
+  } else {
+    html+=`<div style="font-weight:700;color:#93c5fd;font-size:.8rem;margin-bottom:.4rem">הוסף אילוץ</div>`;
+    html+=`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:.35rem;align-items:center;margin-bottom:.5rem"><select class="sel" id="cons-day" style="margin-bottom:0">${SCHEDULE_DAYS.map(d=>`<option value="${d.day}-${d.month}">${d.label} ${HEB_DAYS[d.jsDay]}${d.holiday?' — '+d.holiday.name:''}</option>`).join('')}</select><select class="sel" id="cons-sh" style="width:75px;margin-bottom:0"><option value="a">א׳</option><option value="b">ב׳</option><option value="c">ג׳</option></select><select class="sel" id="cons-type" style="width:150px;margin-bottom:0"><option value="block">❌ מבקש לא לעבוד</option><option value="prefer">✅ מבקש לעבוד</option></select><button class="btn btn-blue" style="padding:.4rem .6rem" onclick="addCons()">➕</button></div>`;
+  }
+  if(cons.length){
+    html+=`<div style="font-size:.7rem;color:#64748b;margin-bottom:.3rem">${pop==='student'?`${totalH}h${totalH>=80?' ✅':' ⚠️ מינימום 80h'}`:pop==='keva'?`${cons.length} אילוצים`:`${cons.length}/${MAX_C} אילוצים`}</div>`;
+    html+=cons.map((c,i)=>`<div style="display:flex;align-items:center;gap:.35rem;padding:.3rem 0;border-bottom:1px solid #1e2a40;flex-wrap:wrap"><span style="font-weight:700;font-size:.8rem;color:${c.isWeekend?'#fcd34d':'#e2e8f0'};min-width:3rem">${c.dayLabel}</span><span style="font-size:.65rem;color:#64748b">${HEB_DAYS[c.jsDay]}</span>${mkTag(shL[c.shiftKey],'rgba(37,99,235,.12)','#93c5fd','rgba(37,99,235,.25)')}${mkTag(c.type==='block'?'❌ מבקש לא לעבוד':'✅ מבקש לעבוד',c.type==='block'?'rgba(220,38,38,.12)':'rgba(5,150,105,.12)',c.type==='block'?'#fca5a5':'#6ee7b7',c.type==='block'?'rgba(220,38,38,.25)':'rgba(5,150,105,.25)')}${!wData.submitted?`<button onclick="delCons(${i})" style="background:none;border:none;color:#475569;cursor:pointer;margin-right:auto;font-size:.85rem">🗑</button>`:''}</div>`).join('');
+  }
+  if(wData.submitted){
+    html+=`<div style="text-align:center;margin-top:.5rem"><div style="color:#6ee7b7;font-size:.82rem;font-weight:700;margin-bottom:.35rem">✅ נשלח למפקד</div><button class="btn" style="background:rgba(245,158,11,.1);color:#fcd34d;font-size:.72rem;border:1px solid rgba(245,158,11,.3)" onclick="unsubmitCons()">✏️ ערוך ושלח מחדש</button></div>`;
+  } else {
+    html+=`<button class="btn btn-blue btn-full" style="padding:.65rem;margin-top:.6rem;font-size:.88rem" onclick="submitCons()">✅ שלח למפקד</button>`;
+  }
+  g('emp-panel-cons').innerHTML=html;
+}
+function toggleSlot(day,month,sh){
+  const allC=get_allC();const wData=allC[window._empWorker]||{constraints:[],submitted:false};const cons=[...wData.constraints||[]];
+  const idx=cons.findIndex(c=>c.day===day&&c.month===month&&c.shiftKey===sh&&c.type==='prefer');
+  if(idx>=0)cons.splice(idx,1);
+  else{const dObj=SCHEDULE_DAYS.find(d=>d.day===day&&d.month===month);cons.push({day,month,dayLabel:dObj.label,jsDay:dObj.jsDay,shiftKey:sh,type:'prefer',isWeekend:true});}
+  saveC({...allC,[window._empWorker]:{...wData,constraints:cons,submitted:false}});
+  // Re-render WITHOUT resetting worker
+  renderConsPanel();
+}
+function addCons(){
+  const allC=get_allC();const pop=POP_MAP[window._empWorker]||'bashal';const wData=allC[window._empWorker]||{constraints:[],submitted:false};const cons=[...wData.constraints||[]];
+  if(cons.length>=MAX_C&&pop!=='keva'){toast(`❌ מכסה של ${MAX_C}`);return;}
+  const dayEl=g('cons-day');const shEl=g('cons-sh');const typeEl=g('cons-type');
+  if(!dayEl||!shEl){return;}
+  const dayVal=dayEl.value,sh=shEl.value,type=typeEl?typeEl.value:'block';
+  const[d,m]=dayVal.split('-').map(Number);
+  if(cons.find(c=>c.day===d&&c.month===m&&c.shiftKey===sh)){toast('⚠️ כבר קיים');return;}
+  const dObj=SCHEDULE_DAYS.find(x=>x.day===d&&x.month===m);
+  cons.push({day:d,month:m,dayLabel:dObj.label,jsDay:dObj.jsDay,shiftKey:sh,type,isWeekend:false});
+  saveC({...allC,[window._empWorker]:{...wData,constraints:cons,submitted:false}});
+  renderConsPanel(); // Stay on page, re-render
+}
+function delCons(i){const allC=get_allC();const wData=allC[window._empWorker]||{constraints:[],submitted:false};const cons=[...wData.constraints||[]];cons.splice(i,1);saveC({...allC,[window._empWorker]:{...wData,constraints:cons,submitted:false}});renderConsPanel();}
+function submitCons(){
+  const allC=get_allC();const pop=POP_MAP[window._empWorker]||'bashal';const wData=allC[window._empWorker]||{constraints:[],submitted:false};const cons=wData.constraints||[];
+  const yr=SCHEDULE_DAYS[0]?.year||new Date().getFullYear();
+  if(pop==='student'){const fC=cons.filter(c=>new Date(yr,c.month-1,c.day).getDay()===5&&c.type==='prefer').length,sC=cons.filter(c=>new Date(yr,c.month-1,c.day).getDay()===6&&c.type==='prefer').length;if(fC<2||sC<2){toast('❌ חסר שישי/שבת (מינימום 2 כ"א)');return;}if(cons.reduce((s,c)=>(SHIFT_HOURS[c.shiftKey]||8)+s,0)<80){toast('❌ מינימום 80h');return;}}
+  if(pop==='keva'){const fC=cons.filter(c=>new Date(yr,c.month-1,c.day).getDay()===5&&c.type==='prefer').length,sC=cons.filter(c=>new Date(yr,c.month-1,c.day).getDay()===6&&c.type==='prefer').length;if(fC<1||sC<1){toast('❌ חסר שישי/שבת');return;}}
+  if(!cons.length){toast('⚠️ אין בחירות');return;}
+  saveC({...allC,[window._empWorker]:{...wData,submitted:true}});toast('✅ נשלח למפקד!');renderConsPanel();
+}
+function unsubmitCons(){const allC=get_allC();const wData=allC[window._empWorker]||{};saveC({...allC,[window._empWorker]:{...wData,submitted:false}});renderConsPanel();}
+function renderMySchedPanel(){
+  const schedule=get_schedule(),schedReady=get_schedReady();
+  if(!schedReady){g('emp-panel-sched').innerHTML='<div style="text-align:center;color:#64748b;padding:2rem">הסידור טרם נוצר</div>';return;}
+  const myShifts=[];const shiftL={a:'א׳ 07:00–15:00',b:'ב׳ 15:00–21:30',c:'ג׳ 21:30–07:00'};
+  SCHEDULE_DAYS.forEach(d=>{const sk=`${d.day}-${d.month}`;const slot=schedule[sk]||{};Object.entries(slot).forEach(([k,v])=>{if(v===window._empWorker&&!k.includes('achmash')){const shKey=k.split('_')[0];if(['a','b','c'].includes(shKey))myShifts.push({...d,shKey,isAchmash:slot[`${shKey}_achmash`]===window._empWorker});}});});
+  if(!myShifts.length){g('emp-panel-sched').innerHTML='<div style="text-align:center;color:#64748b;padding:2rem">אין משמרות מתוכננות</div>';return;}
+  const totalH=myShifts.reduce((s,m)=>(SHIFT_HOURS[m.shKey]||8)+s,0);
+  g('emp-panel-sched').innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:.5rem"><div style="font-weight:700;font-size:.85rem">${window._empWorker} — ${MONTH_LABEL}</div><div style="font-size:.75rem;color:#6ee7b7">${myShifts.length} משמרות | ${totalH}h</div></div>${myShifts.map(s=>{const h=s.holiday;return`<div style="display:flex;align-items:center;gap:.4rem;padding:.35rem 0;border-bottom:1px solid #1e2a40;flex-wrap:wrap;${h?`background:${HOLIDAY_COLORS[h.type]||''};border-radius:6px;padding:.35rem .4rem;`:''}">`+`<span style="font-weight:700;color:${s.isWeekend?'#fcd34d':'#e2e8f0'};font-size:.82rem;min-width:3rem">${s.label}</span>`+`<span style="font-size:.65rem;color:#64748b">${HEB_DAYS[s.jsDay]}</span>`+mkTag(shiftL[s.shKey],'rgba(37,99,235,.12)','#93c5fd','rgba(37,99,235,.25)')+`${s.isAchmash?mkTag('אחמ"ש','rgba(16,185,129,.12)','#6ee7b7','rgba(16,185,129,.25)'):''}${h?mkTag(h.name,HOLIDAY_COLORS[h.type]||'',HOLIDAY_TEXT[h.type]||'#c4b5fd',HOLIDAY_TEXT[h.type]||'#c4b5fd'):''}</div>`;}).join('')}`;
+}
+
+// ══════ MANAGER ══════
+let mgrTab='cons';window._mgrAuthed=false;
+function initMgr(){g('mgr-month').textContent=MONTH_LABEL;if(!window._mgrAuthed){show('mgr-login');hide('mgr-panel');}else{hide('mgr-login');show('mgr-panel');renderMgrPanel();}}
+function mgrLogin(){if(g('mgr-pw').value===MGR_PW){window._mgrAuthed=true;hide('mgr-pw-err');hide('mgr-login');show('mgr-panel');renderMgrPanel();}else show('mgr-pw-err');}
+function renderMgrPanel(){const allSick=get_allSick();const active=allSick.filter(r=>!r.resolved);g('mgr-sick-banner').innerHTML=active.length?`<div style="background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.35);border-radius:10px;padding:.65rem;margin-bottom:.75rem;font-size:.78rem;color:#fca5a5">🚨 מחלה: ${active.map(r=>r.worker).join(', ')}</div>`:'';setMgrTab(mgrTab);}
+function setMgrTab(t){mgrTab=t;['cons','vacs','sched'].forEach(x=>{const btn=g('mgr-tab-'+x+'-btn');btn.style.background=x===t?'#1e3a5f':'#1e2a40';btn.style.color=x===t?'#93c5fd':'#64748b';btn.style.borderColor=x===t?'#3b82f6':'#243048';x===t?show('mgr-panel-'+x):hide('mgr-panel-'+x);});if(t==='cons')renderMgrCons();else if(t==='vacs')renderMgrVacs();else renderMgrSched();}
+function renderMgrCons(){
+  const allC=get_allC();const shL={a:'א׳',b:'ב׳',c:'ג׳'};
+  const groups=[{label:'⭐ בש"ל',list:WORKERS_BASHAL,color:'#3b82f6'},{label:'🎓 סטודנטים',list:WORKERS_STUDENT,color:'#8b5cf6'},{label:'👮 קבע',list:WORKERS_KEVA,color:'#f59e0b'}];
+  g('mgr-panel-cons').innerHTML=groups.map(grp=>`<div class="card"><div style="font-weight:900;font-size:.8rem;color:${grp.color};margin-bottom:.5rem">${grp.label}</div>${grp.list.map(n=>{const wd=allC[n],sub=wd?.submitted;return`<div style="border-bottom:1px solid #1e2a40;padding:.4rem 0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem"><span style="font-weight:700;font-size:.82rem">${n}</span>${mkTag(sub?'✅ הוגש':'⏳ טרם',sub?'rgba(5,150,105,.1)':'rgba(100,116,139,.1)',sub?'#6ee7b7':'#64748b',sub?'rgba(5,150,105,.3)':'rgba(100,116,139,.3)')}</div>${(wd?.constraints||[]).map(c=>`<span class="tag" style="background:rgba(30,42,64,.8);color:#94a3b8;border:1px solid #243048;margin-left:4px;margin-bottom:2px">${c.dayLabel} ${shL[c.shiftKey]} ${c.type==='block'?'❌':'✅'}</span>`).join('')}</div>`;}).join('')}</div>`).join('');
+}
+function renderMgrVacs(){
+  const allV=get_allV();const SC={pending:'#fcd34d',approved:'#6ee7b7',rejected:'#fca5a5'},SL={pending:'ממתין',approved:'אושר',rejected:'נדחה'};
+  const pend=allV.filter(v=>v.status==='pending'),rest=allV.filter(v=>v.status!=='pending');
+  const row=v=>`<div style="border-bottom:1px solid #1e2a40;padding:.5rem 0"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div style="font-weight:700;font-size:.82rem">${v.worker} <span style="font-weight:400;color:#64748b">| ${v.from?.label} – ${v.to?.label}</span></div><div style="font-size:.7rem;color:#64748b">${v.reason}</div></div>${mkTag(SL[v.status],'transparent',SC[v.status],SC[v.status])}</div>${v.status==='pending'?`<div style="display:flex;gap:.4rem;margin-top:.4rem"><button onclick="mgrApprove(${v.id})" style="background:#059669;color:white;border:none;padding:.3rem .7rem;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:Heebo,sans-serif">✅ אשר</button><button onclick="mgrReject(${v.id})" style="background:#dc2626;color:white;border:none;padding:.3rem .7rem;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:Heebo,sans-serif">❌ דחה</button></div>`:''}</div>`;
+  g('mgr-panel-vacs').innerHTML=`${pend.length?`<div class="card"><div style="font-weight:900;color:#fcd34d;margin-bottom:.5rem">⏳ ממתינות (${pend.length})</div>${pend.map(row).join('')}</div>`:''}${rest.length?`<div class="card"><div style="font-weight:700;color:#64748b;margin-bottom:.5rem;font-size:.8rem">היסטוריה</div>${rest.map(row).join('')}</div>`:''}${!allV.length?'<div class="card" style="color:#64748b;text-align:center">אין בקשות</div>':''}`;
+}
+function mgrApprove(id){const allV=get_allV();saveV(allV.map(v=>v.id===id?{...v,status:'approved'}:v));toast('✅ אושר');renderMgrVacs();}
+function mgrReject(id){const allV=get_allV();saveV(allV.map(v=>v.id===id?{...v,status:'rejected'}:v));toast('❌ נדחה');renderMgrVacs();}
+
+let mgrSchedView='week',mgrSchedWeek=0;
+function renderMgrSched(){
+  const weeks=getWeeks();
+  g('mgr-panel-sched').innerHTML=`<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;align-items:center"><button class="btn btn-blue" style="padding:.55rem 1rem;font-size:.88rem" onclick="runGenerate()">⚡ צור סידור</button>${get_schedReady()?`<button class="btn" style="background:#1e2a40;color:#94a3b8;font-size:.78rem" onclick="toggleSchedView()">${mgrSchedView==='week'?'🗓 חודשי':'📅 שבועי'}</button>`:''}</div><div id="sched-output">${get_schedReady()?buildSchedOutput():'<div style="text-align:center;color:#475569;padding:2rem">לחץ ⚡ צור סידור</div>'}</div>`;
+}
+function buildSchedOutput(){
+  const weeks=getWeeks();
+  if(mgrSchedView==='month')return weeks.map((wk,i)=>`<div style="margin-bottom:1rem"><div style="font-size:.68rem;color:#64748b;font-weight:700;margin-bottom:.3rem">שבוע ${i+1}</div>${buildWeekTable(wk)}</div>`).join('');
+  const wk=weeks[mgrSchedWeek]||[];
+  return`<div style="display:flex;gap:.4rem;align-items:center;margin-bottom:.5rem"><button class="btn" style="background:#1e2a40;color:#94a3b8;padding:.3rem .6rem" onclick="changeWeek(-1)" ${mgrSchedWeek===0?'disabled':''}>‹</button><span style="flex:1;text-align:center;font-weight:700;font-size:.82rem">${wk[0]?.label}–${wk[wk.length-1]?.label}</span><button class="btn" style="background:#1e2a40;color:#94a3b8;padding:.3rem .6rem" onclick="changeWeek(1)" ${mgrSchedWeek>=weeks.length-1?'disabled':''}>›</button></div>${buildWeekTable(wk)}`;
+}
+
+function getDeskColor(name){
+  const dh=DESK_MAP[name]||'';
+  if(dh==='סד"צ')return{bg:'rgba(139,92,246,.15)',border:'#7c3aed',text:'#c4b5fd',label:'סד"צ'};
+  if(dh==='פלילי')return{bg:'rgba(37,99,235,.15)',border:'#2563eb',text:'#93c5fd',label:'פלילי'};
+  if(dh==='פח"ע')return{bg:'rgba(220,38,38,.15)',border:'#dc2626',text:'#fca5a5',label:'פח"ע'};
+  return{bg:'rgba(245,158,11,.1)',border:'#f59e0b',text:'#fcd34d',label:'קבע'};
+}
+// מחזיר הערת שעה מיוחדת לשם+יום+משמרת
+function getSpecialNote(name,jsDay,shKey){
+  // ראשון בוקר — שעת כניסה מיוחדת (תמיד, לבנות השירות הללו)
+  if(jsDay===0&&shKey==='a'){
+    if(SUN_MORNING_9.includes(name))return'09:00 כניסה';
+    if(SUN_MORNING_10.includes(name))return'10:00 כניסה';
+  }
+  // חמישי ערב — שחרור מוקדם
+  if(jsDay===4&&shKey==='b'&&THU_EARLY_RELEASE.includes(name))return'יציאה ב20:00';
+  return null;
+}
+
+function buildWeekTable(week){
+  const schedule=get_schedule();
+  const cellHTML=(sk,shKey,field)=>{
+    const slot=schedule[sk]||{};const name=slot[`${shKey}_${field}`];
+    const isAch=field==='achmash';const empty=!name;
+    const dc=name?getDeskColor(name):null;
+    const dayObj=SCHEDULE_DAYS.find(d=>`${d.day}-${d.month}`===sk);
+    const note=name?getSpecialNote(name,dayObj?.jsDay??-1,shKey):null;
+    let bg,border,labelEl='';
+    if(isAch){bg=empty?'rgba(220,38,38,.08)':'rgba(16,185,129,.06)';border=empty?'rgba(220,38,38,.5)':'rgba(16,185,129,.4)';labelEl=`<div class="cell-label" style="color:${empty?'#fca5a5':'#10b981'}">אחמ"ש${empty?' ⚠️':''}</div>`;}
+    else if(dc&&name){bg=dc.bg;border=dc.border;labelEl=`<div class="cell-label" style="color:${dc.text}">${dc.label}</div>`;}
+    else{bg='transparent';border='rgba(100,116,139,.2)';}
+    return`<div class="cell-inner" style="background:${bg};border-color:${border}" onclick="openCellModal('${sk}','${shKey}_${field}')">${labelEl}<div style="color:${dc?dc.text:empty?'#374151':'#e2e8f0'}">${name||''}</div>${note?`<div style="font-size:.44rem;color:#fcd34d;font-weight:700">${note}</div>`:''}</div>`;
+  };
+  const headers=week.map(d=>{const h=d.holiday;return`<th style="min-width:72px;background:${h?HOLIDAY_COLORS[h.type]||'rgba(139,92,246,.06)':d.isWeekend?'rgba(245,158,11,.04)':'#080c14'}"><div style="font-weight:800;color:${h?HOLIDAY_TEXT[h.type]||'#c4b5fd':d.isWeekend?'#fcd34d':'#e2e8f0'};font-size:.68rem">${HEB_DAYS[d.jsDay]}</div><div style="font-size:.55rem;color:${h?HOLIDAY_TEXT[h.type]:'#64748b'}">${d.label}</div>${h?`<div style="font-size:.48rem;color:${HOLIDAY_TEXT[h.type]||'#c4b5fd'}">${h.name}</div>`:''}</th>`;}).join('');
+  const rows=SHIFTS_K.map(sh=>`<tr><td style="background:#080c14;position:sticky;right:0;z-index:1;white-space:nowrap;padding:.35rem .4rem;min-width:68px"><div style="font-weight:700;color:#e2e8f0;font-size:.68rem">משמרת ${sh.label}</div><div style="font-size:.52rem;color:#64748b">${sh.time}</div></td>${week.map(d=>{const sk=`${d.day}-${d.month}`;const h=d.holiday;let cells='';if(d.isWeekend){if(d.isFri||(d.isSat&&sh.key!=='c')){if(sh.key==='a'||sh.key==='b')cells+=cellHTML(sk,sh.key,'keva');cells+=DESKS.map(desk=>cellHTML(sk,sh.key,desk+'_stu')).join('');}else if(d.isSat&&sh.key==='c')cells+=DESKS.map(desk=>cellHTML(sk,sh.key,desk)).join('');}else{if(sh.key==='a'||sh.key==='b'){cells+=cellHTML(sk,sh.key,'keva');cells+=cellHTML(sk,sh.key,'achmash');}cells+=DESKS.map(desk=>cellHTML(sk,sh.key,desk)+cellHTML(sk,sh.key,desk+'_stu')).join('');}return`<td style="background:${h?HOLIDAY_COLORS[h.type]||'rgba(139,92,246,.04)':d.isWeekend?'rgba(245,158,11,.02)':'transparent'};min-width:72px">${cells}</td>`;}).join('')}</tr>`).join('');
+  return`<div class="week-table-wrap"><table><thead><tr><th style="background:#080c14;position:sticky;right:0;z-index:3;min-width:68px;border:none"></th>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function toggleSchedView(){mgrSchedView=mgrSchedView==='week'?'month':'week';renderMgrSched();}
+function changeWeek(d){mgrSchedWeek=Math.max(0,Math.min(getWeeks().length-1,mgrSchedWeek+d));renderMgrSched();}
+function openCellModal(sk,field){
+  const schedule=get_schedule();const shKey=field.split('_')[0];const day=SCHEDULE_DAYS.find(d=>`${d.day}-${d.month}`===sk);const current=(schedule[sk]||{})[field];
+  const pool=ROSTER.filter(r=>{if(field.includes('achmash'))return ACHMASH.includes(r.name)||r.pop==='student'||r.pop==='keva';if(field.endsWith('_stu'))return r.pop==='student';if(field===`${shKey}_keva`)return r.pop==='keva';const desk=field.replace(`${shKey}_`,'').replace('_stu','');if(['sadatz','plili','paha'].includes(desk))return r.desk===desk&&r.pop==='bashal';return r.pop==='keva';});
+  const dc=current?getDeskColor(current):null;
+  g('modal-box').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem"><div style="font-weight:900;font-size:.9rem">✏️ ${day?.label}${day?.holiday?' — '+day.holiday.name:''}</div><button onclick="closeModal()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1.3rem">✕</button></div><div style="display:flex;flex-direction:column;gap:.3rem;margin-bottom:.6rem">${pool.map(r=>{const dc2=getDeskColor(r.name);return`<button onclick="cellSet('${sk}','${field}','${r.name}')" style="text-align:right;padding:.4rem .6rem;border-radius:7px;border:1px solid ${dc2.border}40;background:${current===r.name?'#1e3a5f':'#0f1623'};color:#e2e8f0;cursor:pointer;font-family:Heebo,sans-serif"><span style="color:${dc2.text};font-weight:700">${r.name}</span> <span style="font-size:.62rem;background:${dc2.bg};color:${dc2.text};padding:.1rem .35rem;border-radius:4px;border:1px solid ${dc2.border}40">${dc2.label}</span> <span style="font-size:.6rem;color:#64748b">${POP_LABEL[r.pop]}</span></button>`;}).join('')}</div><button onclick="cellSet('${sk}','${field}',null)" style="width:100%;background:rgba(220,38,38,.1);color:#fca5a5;border:1px solid rgba(220,38,38,.25);padding:.5rem;border-radius:7px;cursor:pointer;font-family:Heebo,sans-serif">🗑 פנה תא</button>`;
+  g('modal').classList.add('show');
+}
+function cellSet(sk,field,name){const schedule=get_schedule();const ns={...schedule,[sk]:{...schedule[sk],[field]:name||null}};saveS(ns,get_schedReady());closeModal();toast(name?`✏️ ${name}`:'🗑');renderMgrSched();}
+function closeModal(){g('modal').classList.remove('show');}
+g('modal').addEventListener('click',e=>{if(e.target===g('modal'))closeModal();});
+
+// ══════ SCHEDULING ENGINE (5 shifts/week for bashal+keva, night logic) ══════
+function canAssign(name,day,month,shKey,usedToday,monthC,wkC,lastS,stuH){
+  const allC=get_allC(),allV=get_allV();
+  const w=ROSTER.find(r=>r.name===name);if(!w||usedToday.has(name))return false;
+  const yr=SCHEDULE_DAYS[0]?.year||new Date().getFullYear(),jd=new Date(yr,month-1,day).getDay(),isFri=jd===5,isSat=jd===6;
+  if(allV.some(v=>v.status==='approved'&&v.worker===name&&v.days?.some(d=>d.day===day&&d.month===month)))return false;
+  if((allC[name]?.constraints||[]).some(c=>c.day===day&&c.month===month&&c.shiftKey===shKey&&c.type==='block'))return false;
+  if(shKey==='a'&&lastS[name]==='c')return false;
+  if(shKey==='c'&&lastS[name]==='c')return false;
+  // ראשון: בנות שירות מסוימות — בוקר בלבד
+  if(SUN_MORNING_ONLY.includes(name)&&jd===0&&(shKey==='b'||shKey==='c'))return false;
+  if(w.pop==='keva'&&shKey==='c')return false;
+  if(w.pop==='bashal'){if(isFri)return false;if(isSat&&(shKey==='a'||shKey==='b'))return false;}
+  if(w.pop==='student'&&isSat&&shKey==='c')return false;
+  if(isSat&&shKey==='c'){if(w.pop!=='bashal')return false;if(NO_SAT_NIGHT.includes(name))return false;}
+  // 5 shifts/week cap for bashal and keva
+  if((w.pop==='bashal'||w.pop==='keva')&&(wkC[name]||0)>=5)return false;
+  if(w.pop==='student'&&!get_allC()[name]?.submitted)return false;
+  if(w.pop==='student'){const h=(stuH[name]||0)+(SHIFT_HOURS[shKey]||8);if(h>120)return false;}
+  return true;
+}
+function scoreW(name,day,month,shKey,monthC){
+  const allC=get_allC();const w=ROSTER.find(r=>r.name===name);
+  let s=monthC[name]||0;
+  if((allC[name]?.constraints||[]).some(c=>c.day===day&&c.month===month&&c.shiftKey===shKey&&c.type==='prefer'))s-=3;
+  if(w?.pop==='student'){const yr=SCHEDULE_DAYS[0]?.year||new Date().getFullYear(),jd=new Date(yr,month-1,day).getDay();if(jd===5)s-=8;if(jd===6)s-=8;}
+  return s+(Math.random()-.5)*.4;
+}
+function runGenerate(){
+  const monthC={},wkC={},lastS={},stuH={};const sched={};
+  SCHEDULE_DAYS.forEach(({day,month,isWeekend,isFri,isSat,jsDay})=>{
+    const sk=`${day}-${month}`;sched[sk]={};const usedToday=new Set();
+    if(jsDay===0)Object.keys(wkC).forEach(n=>wkC[n]=0);
+    const elig=(filter,shKey)=>ROSTER.filter(r=>filter(r)&&canAssign(r.name,day,month,shKey,usedToday,monthC,wkC,lastS,stuH)).sort((a,b)=>scoreW(a.name,day,month,shKey,monthC)-scoreW(b.name,day,month,shKey,monthC));
+    const assign=(name,field,shKey)=>{if(!name)return;sched[sk][`${shKey}_${field}`]=name;usedToday.add(name);monthC[name]=(monthC[name]||0)+1;wkC[name]=(wkC[name]||0)+1;lastS[name]=shKey;if(POP_MAP[name]==='student')stuH[name]=(stuH[name]||0)+(SHIFT_HOURS[shKey]||8);};
+    SHIFTS_K.forEach(sh=>{
+      if(isWeekend){
+        if(isFri){const kp=elig(w=>w.pop==='keva',sh.key);if(kp.length)assign(kp[0].name,'keva',sh.key);DESKS.forEach(desk=>{const p=elig(w=>w.desk===desk&&w.pop==='student',sh.key);if(p.length)assign(p[0].name,desk+'_stu',sh.key);});}
+        else if(isSat&&sh.key==='c'){
+          // Night shift logic
+          DESKS.forEach(desk=>{
+            const p=elig(w=>w.desk===desk&&w.pop==='bashal'&&!NO_SAT_NIGHT.includes(w.name),sh.key);
+            if(!p.length)return;
+            assign(p[0].name,desk,sh.key);
+            // If NIGHT_2 person assigned, also assign second
+            if(NIGHT_2.includes(p[0].name)){const p2=elig(w=>w.desk===desk&&w.pop==='bashal'&&w.name!==p[0].name,sh.key);if(p2.length)assign(p2[0].name,desk+'_extra',sh.key);}
+          });
+        }
+        else{const kp=elig(w=>w.pop==='keva',sh.key);if(kp.length)assign(kp[0].name,'keva',sh.key);DESKS.forEach(desk=>{const p=elig(w=>w.desk===desk&&w.pop==='student',sh.key);if(p.length)assign(p[0].name,desk+'_stu',sh.key);});}
+      } else {
+        if(sh.key==='a'||sh.key==='b'){const kp=elig(w=>w.pop==='keva',sh.key);if(kp.length)assign(kp[0].name,'keva',sh.key);}
+        DESKS.forEach(desk=>{const p=elig(w=>w.desk===desk&&w.pop==='bashal',sh.key);if(p.length)assign(p[0].name,desk,sh.key);});
+        DESKS.forEach(desk=>{const p=elig(w=>w.desk===desk&&w.pop==='student',sh.key);if(p.length)assign(p[0].name,desk+'_stu',sh.key);});
+        if(sh.key==='c'){
+          // Weeknight: if NIGHT_2 person in shift, add second
+          DESKS.forEach(desk=>{
+            const n1=sched[sk][`c_${desk}`];
+            if(n1&&NIGHT_2.includes(n1)){const p2=elig(w=>w.desk===desk&&w.pop==='bashal'&&w.name!==n1,sh.key);if(p2.length)assign(p2[0].name,desk+'_extra',sh.key);}
+          });
+        }
+        if(sh.key==='a'||sh.key==='b'){const isElig=n=>ACHMASH.includes(n)||POP_MAP[n]==='student';const inShift=Object.entries(sched[sk]).filter(([k,v])=>v&&k.startsWith(sh.key+'_')&&!k.includes('achmash')).map(([,v])=>v);const cands=inShift.filter(isElig);const counts={};Object.values(sched).forEach(slot=>Object.entries(slot||{}).forEach(([k,v])=>{if(k.includes('achmash')&&v)counts[v]=(counts[v]||0)+1;}));if(cands.length){cands.sort((a,b)=>(counts[a]||0)-(counts[b]||0));sched[sk][`${sh.key}_achmash`]=cands[0];}else{const ki=inShift.find(n=>POP_MAP[n]==='keva');sched[sk][`${sh.key}_achmash`]=ki||null;}}
+      }
+    });
+  });
+  saveS(sched,true);toast('✅ סידור נוצר!');renderMgrSched();
+}
+
+// ══════ SICK ══════
+let sickWorker='',sickSelShift=null;
+function initSick(){g('sick-worker-wrap').innerHTML=workerSelHTML('sick-worker','sickWorkerChange()',true);sickWorker='';sickSelShift=null;hide('sick-shifts-card');hide('sick-no-shifts');hide('sick-no-sched');g('sick-confirm-btn').classList.add('hidden');renderSickActive();}
+function sickWorkerChange(){
+  sickWorker=g('sick-worker').value;sickSelShift=null;g('sick-confirm-btn').classList.add('hidden');hide('sick-shifts-card');hide('sick-no-shifts');hide('sick-no-sched');
+  if(!sickWorker)return;if(!get_schedReady()){show('sick-no-sched');return;}
+  const schedule=get_schedule();const today=new Date(),tom=new Date(today);tom.setDate(tom.getDate()+1);
+  const keys=[`${today.getDate()}-${today.getMonth()+1}`,`${tom.getDate()}-${tom.getMonth()+1}`];
+  window._sickUp=keys.flatMap(sk=>{const slot=schedule[sk]||{};return Object.entries(slot).filter(([k,v])=>v===sickWorker&&!k.includes('achmash')).map(([k])=>{const shKey=k.split('_')[0];if(!['a','b','c'].includes(shKey))return null;const[d,m]=sk.split('-').map(Number);const dObj=SCHEDULE_DAYS.find(x=>x.day===d&&x.month===m);return{day:d,month:m,shKey,field:k,slotKey:sk,label:dObj?.label||sk,jsDay:dObj?.jsDay||0};}).filter(Boolean);});
+  if(!window._sickUp.length){show('sick-no-shifts');return;}
+  const shL={a:'א׳',b:'ב׳',c:'ג׳'};show('sick-shifts-card');
+  g('sick-shifts-list').innerHTML=window._sickUp.map((s,i)=>`<button id="sicksh-${i}" onclick="selectSickShift(${i})" style="width:100%;text-align:right;padding:.5rem .7rem;border-radius:8px;border:1.5px solid #243048;background:#0f1623;color:#e2e8f0;cursor:pointer;font-family:Heebo,sans-serif;display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem"><span style="font-weight:700">${s.label} ${HEB_DAYS[s.jsDay]}</span>${mkTag(shL[s.shKey],'rgba(37,99,235,.12)','#93c5fd','rgba(37,99,235,.25)')}</button>`).join('');
+}
+function selectSickShift(i){sickSelShift=window._sickUp[i];window._sickUp.forEach((_,j)=>{const btn=g('sicksh-'+j);if(!btn)return;btn.style.borderColor=j===i?'#fca5a5':'#243048';btn.style.background=j===i?'rgba(220,38,38,.1)':'#0f1623';});g('sick-confirm-btn').classList.remove('hidden');}
+function sickSubmit(){
+  if(!sickSelShift){toast('⚠️ יש לבחור משמרת');return;}
+  const{day,month,shKey,field,slotKey,label}=sickSelShift;const schedule=get_schedule();
+  const ns={...schedule,[slotKey]:{...schedule[slotKey],[field]:null}};
+  const ak=`${shKey}_achmash`;if(ns[slotKey][ak]===sickWorker){const inS=Object.entries(ns[slotKey]).filter(([k,v])=>v&&k.startsWith(shKey+'_')&&!k.includes('achmash')).map(([,v])=>v);ns[slotKey][ak]=inS.find(n=>ACHMASH.includes(n)||POP_MAP[n]==='student')||inS.find(n=>POP_MAP[n]==='keva')||null;}
+  saveS(ns,true);saveSick([...get_allSick(),{id:Date.now(),worker:sickWorker,day,month,shKey,label,reportedAt:new Date().toLocaleTimeString('he-IL'),resolved:false}]);
+  toast(`🤒 ${sickWorker} הוסר/ה`);g('sick-worker').value='';sickWorker='';sickSelShift=null;hide('sick-shifts-card');hide('sick-no-shifts');hide('sick-no-sched');g('sick-confirm-btn').classList.add('hidden');renderSickActive();
+}
+function renderSickActive(){const allSick=get_allSick();const active=allSick.filter(r=>!r.resolved);const shL={a:'א׳',b:'ב׳',c:'ג׳'};g('sick-active-list').innerHTML=active.length?active.map(r=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid #1e2a40"><div><span style="font-weight:700;color:#fca5a5">🤒 ${r.worker}</span><span style="font-size:.7rem;color:#64748b"> ${r.label} | ${shL[r.shKey]}</span></div><button onclick="resolveSick(${r.id})" style="background:rgba(5,150,105,.1);color:#6ee7b7;border:1px solid rgba(5,150,105,.3);padding:.2rem .5rem;border-radius:6px;font-size:.7rem;cursor:pointer;font-family:Heebo,sans-serif">✅ סגור</button></div>`).join(''):'<div style="font-size:.78rem;color:#64748b">אין דיווחים פעילים</div>';}
+function resolveSick(id){saveSick(get_allSick().map(r=>r.id===id?{...r,resolved:true}:r));renderSickActive();toast('✅ סגור');}
+
+// ══════ PAST SCHEDULES ══════
+let pastViewKey=null;
+function initPast(){
+  const past=get_pastSchedules();const keys=Object.keys(past).sort().reverse();
+  if(!keys.length){g('past-content').innerHTML='<div class="card" style="text-align:center;color:#64748b;padding:2rem">אין סידורים שמורים עדיין</div>';return;}
+  if(pastViewKey&&past[pastViewKey]){renderPastSched(pastViewKey);return;}
+  g('past-content').innerHTML=keys.map(k=>{const p=past[k];return`<div class="card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="renderPastSched('${k}')"><div><div style="font-weight:700">${p.label||k}</div><div style="font-size:.7rem;color:#64748b">${Object.keys(p.schedule||{}).length} ימים</div></div><span style="color:#93c5fd">← צפייה</span></div>`;}).join('');
+}
+function renderPastSched(key){
+  pastViewKey=key;const past=get_pastSchedules();const p=past[key];if(!p)return;
+  const days=[];const m=p.month,y=p.year,dim=new Date(y,m,0).getDate();
+  for(let i=1;i<=dim;i++){const jd=new Date(y,m-1,i).getDay();days.push({day:i,month:m,year:y,label:`${i}/${m}`,jsDay:jd,isWeekend:jd===5||jd===6,isFri:jd===5,isSat:jd===6,holiday:getHoliday(i,m)});}
+  const weeks=getWeeks(days);let html=`<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.75rem"><button class="btn btn-ghost" onclick="pastViewKey=null;initPast()">← חזרה לרשימה</button><div style="font-weight:700;font-size:.9rem">${p.label||key}</div></div>`;
+  html+=weeks.map((wk,i)=>{
+    const headers=wk.map(d=>{const h=d.holiday;return`<th style="min-width:72px;background:${h?HOLIDAY_COLORS[h.type]||'rgba(139,92,246,.06)':d.isWeekend?'rgba(245,158,11,.04)':'#080c14'}"><div style="font-weight:800;color:${h?HOLIDAY_TEXT[h.type]:d.isWeekend?'#fcd34d':'#e2e8f0'};font-size:.68rem">${HEB_DAYS[d.jsDay]}</div><div style="font-size:.55rem;color:#64748b">${d.label}</div>${h?`<div style="font-size:.48rem;color:${HOLIDAY_TEXT[h.type]}">${h.name}</div>`:''}</th>`;}).join('');
+    const rows=SHIFTS_K.map(sh=>`<tr><td style="background:#080c14;position:sticky;right:0;z-index:1;white-space:nowrap;padding:.3rem .4rem;min-width:68px"><div style="font-weight:700;color:#e2e8f0;font-size:.65rem">${sh.label}</div><div style="font-size:.5rem;color:#64748b">${sh.time}</div></td>${wk.map(d=>{const sk=`${d.day}-${d.month}`;const slot=p.schedule[sk]||{};const entries=Object.entries(slot).filter(([k,v])=>v&&k.startsWith(sh.key+'_'));const dc2=entries.map(([k,v])=>{const dc=getDeskColor(v);return`<div style="background:${dc.bg};border:1px solid ${dc.border}40;border-radius:4px;padding:1px 3px;margin-bottom:1px;font-size:.62rem"><div style="font-size:.44rem;color:${dc.text}">${dc.label}</div><div style="color:${dc.text};font-weight:700">${v}</div></div>`;}).join('');return`<td style="min-width:72px;background:${d.isWeekend?'rgba(245,158,11,.02)':'transparent'}">${dc2}</td>`;}).join('')}</tr>`).join('');
+    return`<div style="margin-bottom:1rem"><div style="font-size:.68rem;color:#64748b;margin-bottom:.3rem">שבוע ${i+1}</div><div class="week-table-wrap"><table><thead><tr><th style="background:#080c14;position:sticky;right:0;z-index:3;min-width:68px;border:none"></th>${headers}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  }).join('');
+  g('past-content').innerHTML=html;
+}
+</script>
+</body>
+</html>
